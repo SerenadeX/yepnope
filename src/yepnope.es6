@@ -1,6 +1,8 @@
+//Hello
+
 let isFunction = (func) => typeof func === 'function';
 let isString = (string) => typeof string === 'string';
-let isArray = Array.isArray || (arr) =>  {}.toString() == '[object Array]';
+let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
 let isObject = (obj) => Object(obj) === obj;
 
 class Yepnope {
