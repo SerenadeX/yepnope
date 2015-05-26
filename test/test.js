@@ -43,7 +43,7 @@ describe('yep nope differences', function() {
         expect($.fn.jquery).toBe('1.11.2');
         done();
       }
-    })
+    });
   });
 
   it('loads correct script on false', function(done) {
@@ -55,6 +55,21 @@ describe('yep nope differences', function() {
         expect($.fn.jquery).toBe('1.11.0');
         done();
       }
-    })
+    });
   });
 });
+
+// describe('Multiple loads only one', function(done) {
+//   it('should load only one instance of loadOnlyOnce', function(done) {
+//     yepnope({
+//       load: [
+//         "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/loadOnlyOnce.js",
+//         "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/loadOnlyOnce.js"
+//       ],
+//       complete: function() {
+//         expect(window.load).toBe(1);
+//         done();
+//       }
+//     });
+//   });
+// });

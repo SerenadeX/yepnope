@@ -83,7 +83,8 @@ class Yepnope {
 
   }
   loadFromArray(arr) {
-    for (var a of arr) {
+    for (var key in arr) {
+      var a = arr[key];
       if (isString(a)) this.loadFile(a);
       if (isArray(a)) this.loadFromArray(a);
       if (isObject(a)) this.loadFromObject(a);
@@ -250,12 +251,6 @@ class Yepnope {
     this.readFirstScript();
 
     this.firstScript.parentNode.insertBefore(element, this.firstScript);
-
-
-
-
-
-
 
   }
 }
