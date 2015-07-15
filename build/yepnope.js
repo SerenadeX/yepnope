@@ -17,6 +17,8 @@ var isObject = function isObject(obj) {
   return Object(obj) === obj;
 };
 
+var yepnopeScripts = [];
+
 var Yepnope = (function () {
   function Yepnope(needs) {
     _classCallCheck(this, Yepnope);
@@ -184,6 +186,10 @@ var Yepnope = (function () {
         }
       };
 
+      if (yepnopeScripts.indexOf(url) > -1) {
+        return;
+      }
+
       element.src = url;
       element.setAttribute('type', 'text/javascript');
       element.width = element.height = '0';
@@ -272,6 +278,12 @@ var Yepnope = (function () {
         element.setAttribute('type', 'text/javascript');
         element.src = item.url;
       }
+
+      if (yepnopeScripts.indexOf(item.url) > -1) {
+        return;
+      }
+
+      yepnopeScripts.push(item.url);
 
       element.onload = function () {
         if (!done && _this5.isFileReady(element.readyState)) {

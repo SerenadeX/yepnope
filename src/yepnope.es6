@@ -5,6 +5,8 @@ let isString = (string) => typeof string === 'string';
 let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
 let isObject = (obj) => Object(obj) === obj;
 
+let yepnopeScripts = [];
+
 class Yepnope {
   constructor(needs) {
     this.fileStack = 0;
@@ -150,6 +152,10 @@ class Yepnope {
       }
     };
 
+    if (yepnopeScripts.indexOf(url) > -1) {
+      return;
+    }
+
     element.src = url;
     element.setAttribute('type', 'text/javascript');
     element.width = element.height = '0';
@@ -229,6 +235,14 @@ class Yepnope {
       element.setAttribute('type', 'text/javascript');
       element.src = item.url;
     }
+
+    if (yepnopeScripts.indexOf(item.url) > -1) {
+      return;
+    }
+
+    yepnopeScripts.push(item.url);
+
+
 
     element.onload = () => {
       if (!done && this.isFileReady(element.readyState)) {
