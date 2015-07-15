@@ -5,6 +5,8 @@ let isString = (string) => typeof string === 'string';
 let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
 let isObject = (obj) => Object(obj) === obj;
 
+let yepnopeScripts = [];
+
 class Yepnope {
   constructor(needs) {
     this.fileStack = 0;
@@ -83,7 +85,8 @@ class Yepnope {
 
   }
   loadFromArray(arr) {
-    for (var a of arr) {
+    for (var key in arr) {
+      var a = arr[key];
       if (isString(a)) this.loadFile(a);
       if (isArray(a)) this.loadFromArray(a);
       if (isObject(a)) this.loadFromObject(a);
@@ -148,6 +151,10 @@ class Yepnope {
         }
       }
     };
+
+    if (yepnopeScripts.indexOf(url) > -1) {
+      return;
+    }
 
     element.src = url;
     element.setAttribute('type', 'text/javascript');
@@ -229,6 +236,14 @@ class Yepnope {
       element.src = item.url;
     }
 
+    if (yepnopeScripts.indexOf(item.url) > -1) {
+      return;
+    }
+
+    yepnopeScripts.push(item.url);
+
+
+
     element.onload = () => {
       if (!done && this.isFileReady(element.readyState)) {
         done = true;
@@ -250,12 +265,6 @@ class Yepnope {
     this.readFirstScript();
 
     this.firstScript.parentNode.insertBefore(element, this.firstScript);
-
-
-
-
-
-
 
   }
 }

@@ -17,6 +17,8 @@ var isObject = function isObject(obj) {
   return Object(obj) === obj;
 };
 
+var yepnopeScripts = [];
+
 var Yepnope = (function () {
   function Yepnope(needs) {
     _classCallCheck(this, Yepnope);
@@ -106,31 +108,11 @@ var Yepnope = (function () {
   }, {
     key: 'loadFromArray',
     value: function loadFromArray(arr) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = arr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var a = _step.value;
-
-          if (isString(a)) this.loadFile(a);
-          if (isArray(a)) this.loadFromArray(a);
-          if (isObject(a)) this.loadFromObject(a);
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator['return']) {
-            _iterator['return']();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+      for (var key in arr) {
+        var a = arr[key];
+        if (isString(a)) this.loadFile(a);
+        if (isArray(a)) this.loadFromArray(a);
+        if (isObject(a)) this.loadFromObject(a);
       }
     }
   }, {
@@ -203,6 +185,10 @@ var Yepnope = (function () {
           }
         }
       };
+
+      if (yepnopeScripts.indexOf(url) > -1) {
+        return;
+      }
 
       element.src = url;
       element.setAttribute('type', 'text/javascript');
@@ -292,6 +278,12 @@ var Yepnope = (function () {
         element.setAttribute('type', 'text/javascript');
         element.src = item.url;
       }
+
+      if (yepnopeScripts.indexOf(item.url) > -1) {
+        return;
+      }
+
+      yepnopeScripts.push(item.url);
 
       element.onload = function () {
         if (!done && _this5.isFileReady(element.readyState)) {
