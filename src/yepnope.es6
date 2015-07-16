@@ -1,5 +1,3 @@
-//Hello
-
 let isFunction = (func) => typeof func === 'function';
 let isString = (string) => typeof string === 'string';
 let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
