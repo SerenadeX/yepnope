@@ -12,7 +12,7 @@ class Yepnope {
     this.timeout = 1e4;
     this.cache = [];
     this.firstScript = document.getElementsByTagName('script')[0];
-
+    this.complete = function() {};
 
 
     if (isString(needs)) this.loadFile(needs);
@@ -32,24 +32,27 @@ class Yepnope {
     let group = testResult ? obj.yep : obj.nope;
     let always = obj.load || obj.both;
     let callback = obj.callback || function() {};
-    let complete = obj.complete || function() {};
+
+    this.complete = obj.complete
     let cbRef = callback;
 
     let runOnGroup = (needGroup, moreToCome) => {
 
       if ('' !== needGroup && !needGroup && !moreToCome) {
-        complete();
+
+        // complete();
       } else if (isString(needGroup)) {
         if (!moreToCome) {
           callback = () => {
             let args = [].slice.call(arguments);
             cbRef.apply(this, args);
-            complete();
+            // complete();
           };
         }
         this.loadFile(needGroup, callback);
       } else if (isObject(needGroup)) {
         var needGroupSize = Object.keys(needGroup).length;
+
         for (let key in needGroup) {
           if (!moreToCome && !--needGroupSize) {
             if (!isFunction(callback)) {
@@ -57,14 +60,14 @@ class Yepnope {
                 return () => {
                   let args = [].slice.call(arguments);
                   if (innerCb) innerCb.apply(this, args);
-                  complete();
+                  // complete();
                 };
               };
             } else {
               callback = () => {
                 var args = [].slice.call(arguments);
                 cbRef.apply(this, args);
-                complete();
+                // complete();
               };
             }
           }
@@ -74,11 +77,11 @@ class Yepnope {
 
     };
 
-    runOnGroup(group, always || obj.complete);
+    runOnGroup(group, always || this.complete);
     if (always) {
       runOnGroup(always);
-    } else if (obj.complete) {
-      runOnGroup('');
+    } else if (complete) {
+      runOnGroup();
     }
 
   }
@@ -184,7 +187,7 @@ class Yepnope {
 
 
     if (item) {
-      if (item.ext) {
+      if (item.ext) { //not a function
         setTimeout(() => {
           this.injectFile(item);
         }, 1);
@@ -193,8 +196,13 @@ class Yepnope {
         this.executeStack();
       }
     } else {
+    
       this.started = false;
+      if (!this.execStack.length && isFunction(this.complete)) {
+        this.complete();
+      }
     }
+
   }
   loadFile(filename, callback) {
     let extension = this.getExtension(filename);
@@ -212,6 +220,7 @@ class Yepnope {
 
     if (isFunction(callback)) {
       this.load(() => {
+
         callback(filename);
         this.cache[filename] = 2;
       });
@@ -235,6 +244,7 @@ class Yepnope {
     }
 
     if (yepnopeScripts.indexOf(item.url) > -1) {
+      this.executeStack();
       return;
     }
 

@@ -26,6 +26,7 @@ var Yepnope = (function () {
     this.timeout = 10000;
     this.cache = [];
     this.firstScript = document.getElementsByTagName('script')[0];
+    this.complete = function () {};
 
     if (isString(needs)) this.loadFile(needs);
     if (isArray(needs)) this.loadFromArray(needs);
@@ -55,24 +56,24 @@ var Yepnope = (function () {
       var group = testResult ? obj.yep : obj.nope;
       var always = obj.load || obj.both;
       var callback = obj.callback || function () {};
-      var complete = obj.complete || function () {};
+
+      this.complete = obj.complete;
       var cbRef = callback;
 
       var runOnGroup = function runOnGroup(needGroup, moreToCome) {
 
-        if ('' !== needGroup && !needGroup && !moreToCome) {
-          complete();
-        } else if (isString(needGroup)) {
+        if ('' !== needGroup && !needGroup && !moreToCome) {} else if (isString(needGroup)) {
           if (!moreToCome) {
             callback = function () {
               var args = [].slice.call(_arguments);
               cbRef.apply(_this, args);
-              complete();
+              // complete();
             };
           }
           _this.loadFile(needGroup, callback);
         } else if (isObject(needGroup)) {
           var needGroupSize = Object.keys(needGroup).length;
+
           for (var key in needGroup) {
             if (!moreToCome && ! --needGroupSize) {
               if (!isFunction(callback)) {
@@ -80,14 +81,14 @@ var Yepnope = (function () {
                   return function () {
                     var args = [].slice.call(_arguments);
                     if (innerCb) innerCb.apply(_this, args);
-                    complete();
+                    // complete();
                   };
                 };
               } else {
                 callback = function () {
                   var args = [].slice.call(_arguments);
                   cbRef.apply(_this, args);
-                  complete();
+                  // complete();
                 };
               }
             }
@@ -96,11 +97,11 @@ var Yepnope = (function () {
         }
       };
 
-      runOnGroup(group, always || obj.complete);
+      runOnGroup(group, always || this.complete);
       if (always) {
         runOnGroup(always);
-      } else if (obj.complete) {
-        runOnGroup('');
+      } else if (complete) {
+        runOnGroup();
       }
     }
   }, {
@@ -221,6 +222,7 @@ var Yepnope = (function () {
 
       if (item) {
         if (item.ext) {
+          //not a function
           setTimeout(function () {
             _this3.injectFile(item);
           }, 1);
@@ -229,7 +231,11 @@ var Yepnope = (function () {
           this.executeStack();
         }
       } else {
+
         this.started = false;
+        if (!this.execStack.length && isFunction(this.complete)) {
+          this.complete();
+        }
       }
     }
   }, {
@@ -251,6 +257,7 @@ var Yepnope = (function () {
 
       if (isFunction(callback)) {
         this.load(function () {
+
           callback(filename);
           _this4.cache[filename] = 2;
         });
@@ -278,6 +285,7 @@ var Yepnope = (function () {
       }
 
       if (yepnopeScripts.indexOf(item.url) > -1) {
+        this.executeStack();
         return;
       }
 
@@ -312,3 +320,5 @@ var Yepnope = (function () {
 var yepnope = function yepnope(needs) {
   return new Yepnope(needs);
 };
+
+// complete();

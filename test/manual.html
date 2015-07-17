@@ -14,14 +14,20 @@
     <script>
       loadme = ['file1.js', 'file1.js', 'file1.js']
       yepnope({
-        test: false,
+        test: true,
         yep: loadme,
         nope: [],
-        load: loadme
+        load: loadme,
+        complete: function() {
+          console.log("complete");
+        },
+        callback: function() {
+          console.log("callback");
+        }
       })
 
 
-      // yepnope("file1.js")
+      yepnope("style1.css")
       // yepnope("file1.js")
     </script>
   </body>
