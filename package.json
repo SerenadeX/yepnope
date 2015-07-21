@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "karma start --single-run --browsers phantomjs"
+    "test": "karma start --single-run --browsers ./node_modules/.bin/phantomjs"
   },
   "repository": {
     "type": "git",
