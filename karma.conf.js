@@ -4,6 +4,12 @@
 module.exports = function(config) {
   config.set({
 
+    plugins: [
+      'karma-chrome-launcher',
+      'karma-phantomjs-launcher',
+      'karma-jasmine'
+    ],
+
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
