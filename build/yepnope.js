@@ -100,7 +100,7 @@ var Yepnope = (function () {
       runOnGroup(group, always || this.complete);
       if (always) {
         runOnGroup(always);
-      } else if (complete) {
+      } else if (this.complete) {
         runOnGroup();
       }
     }

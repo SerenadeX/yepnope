@@ -16,16 +16,12 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'build/yepnope.js',
-      'test/**/*.js'
+      'test/test.js'
     ],
 
 
     // list of files to exclude
     exclude: [
-      'test/tests.js',
-      'test/qunit.js',
-      'test/run.js',
-      'test/node_modules/**/*.js'
     ],
 
 

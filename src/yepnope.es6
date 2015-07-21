@@ -80,7 +80,7 @@ class Yepnope {
     runOnGroup(group, always || this.complete);
     if (always) {
       runOnGroup(always);
-    } else if (complete) {
+    } else if (this.complete) {
       runOnGroup();
     }
 
@@ -196,7 +196,7 @@ class Yepnope {
         this.executeStack();
       }
     } else {
-    
+
       this.started = false;
       if (!this.execStack.length && isFunction(this.complete)) {
         this.complete();
