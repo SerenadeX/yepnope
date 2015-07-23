@@ -7,7 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start"
+    "test": "./node_modules/.bin/karma start --browsers PhantomJS",
+    "start": "./node_modules/.bin/karma start",
+    "start-ie": "./node_modules/.bin/karma start --browsers IE; npm start",
+    "start-safari": "./node_modules/.bin/karma start --browsers Safari; npm start"
   },
   "repository": {
     "type": "git",
