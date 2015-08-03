@@ -26,11 +26,16 @@ var Yepnope = (function () {
     this.timeout = 10000;
     this.cache = [];
     this.firstScript = document.getElementsByTagName('script')[0];
-    this.complete = function () {};
+    this.complete = function () {
+      console.log('ran default');
+    };
 
     if (isString(needs)) this.loadFile(needs);
-    if (isArray(needs)) this.loadFromArray(needs);
-    if (isObject(needs)) this.loadFromObject(needs);
+    if (isArray(needs)) {
+      this.loadFromArray(needs);
+    } else if (isObject(needs)) {
+      this.loadFromObject(needs);
+    }
   }
 
   _createClass(Yepnope, [{
@@ -59,9 +64,7 @@ var Yepnope = (function () {
 
       this.complete = obj.complete;
       var cbRef = callback;
-
       var runOnGroup = function runOnGroup(needGroup, moreToCome) {
-
         if ('' !== needGroup && !needGroup && !moreToCome) {} else if (isString(needGroup)) {
           if (!moreToCome) {
             callback = function () {
@@ -101,7 +104,7 @@ var Yepnope = (function () {
       if (always) {
         runOnGroup(always);
       } else if (this.complete) {
-        runOnGroup();
+        runOnGroup('');
       }
     }
   }, {
@@ -321,4 +324,4 @@ var yepnope = function yepnope(needs) {
   return new Yepnope(needs);
 };
 
-// complete();
+// this.complete();

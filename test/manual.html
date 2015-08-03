@@ -1,0 +1,48 @@
+<html>
+<head>
+
+</head>
+<body>
+
+  <script type="text/javascript" src="../build/yepnope.js"></script>
+
+
+  <pre><code></code></pre>
+  <script>
+  // console.log = function(a) {
+  //   for (var i in arguments) {
+  //
+  //     document.getElementsByTagName("code")[0].innerHTML += "\n" + arguments[i].toString();
+  //   }
+  // }
+  yepnope([
+    {
+      test: false,
+      nope: "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/loadOnlyOnce.js"
+    },
+    {
+      test: true,
+      yep: "http://code.jquery.com/jquery-1.11.2.min.js"
+    },
+    // {
+    //   test: true,
+    //   nope: "http://code.jquery.com/jquery-1.11.0.min.js"
+    // },
+    {
+      complete: function() {
+        for (var i in document.getElementsByTagName('script')) {
+          if (i.innerHTML) console.log(i.innerHTML);
+        }
+        console.log('hi');
+        console.log(window.load);
+        console.log($.fn.jquery);
+        done();
+      }
+    }
+  ]);
+
+  </script>
+</body>
+
+
+</html>

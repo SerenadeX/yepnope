@@ -12,12 +12,17 @@ class Yepnope {
     this.timeout = 1e4;
     this.cache = [];
     this.firstScript = document.getElementsByTagName('script')[0];
-    this.complete = function() {};
+    this.complete = function() {
+      console.log('ran default');
+    };
 
 
     if (isString(needs)) this.loadFile(needs);
-    if (isArray(needs)) this.loadFromArray(needs);
-    if (isObject(needs)) this.loadFromObject(needs);
+    if (isArray(needs)) {
+      this.loadFromArray(needs);
+    } else if (isObject(needs)) {
+      this.loadFromObject(needs);
+    }
   }
   readFirstScript() {
     if (!this.firstScript || !this.firstScript.parentNode) {
@@ -35,12 +40,10 @@ class Yepnope {
 
     this.complete = obj.complete
     let cbRef = callback;
-
     let runOnGroup = (needGroup, moreToCome) => {
-
       if ('' !== needGroup && !needGroup && !moreToCome) {
 
-        // complete();
+        // this.complete();
       } else if (isString(needGroup)) {
         if (!moreToCome) {
           callback = () => {
@@ -81,7 +84,7 @@ class Yepnope {
     if (always) {
       runOnGroup(always);
     } else if (this.complete) {
-      runOnGroup();
+      runOnGroup('');
     }
 
   }
