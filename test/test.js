@@ -44,3 +44,19 @@ describe('Multiple loads only one', function(done) {
     });
   });
 });
+
+describe('api weirdness', function(done) {
+  it('should load complete in object at end of array', function(done) {
+    yepnope([
+      {
+        test: false,
+        nope: "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/loadOnlyOnce.js"
+      },
+      {
+        complete: function() {
+          done();
+        }
+      }
+    ]);
+  });
+});
