@@ -1,13 +1,135 @@
 <html>
 <head>
 
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script>
+jQuery.uaMatch = function(e, t) {
+  if (e.cleanData) {
+    var i = e.cleanData;
+    e.cleanData = function(t) {
+      for (var n, o = 0; null != (n = t[o]); o++)
+      try {
+        e(n).triggerHandler("remove")
+      } catch (s) {}
+      i(t)
+    }
+  } else {
+    var n = e.fn.remove;
+    e.fn.remove = function(t, i) {
+      return this.each(function() {
+        return i || (!t || e.filter(t, [this]).length) && e("*", this).add([this]).each(function() {
+          try {
+            e(this).triggerHandler("remove")
+          } catch (t) {}
+        }), n.call(e(this), t, i)
+      })
+    }
+  }
+  e.widget = function(t, i, n) {
+    var o, s = t.split(".")[0];
+    t = t.split(".")[1], o = s + "-" + t, n || (n = i, i = e.Widget), e.expr[":"][o] = function(i) {
+      return !!e.data(i, t)
+    }, e[s] = e[s] || {}, e[s][t] = function(e, t) {
+      arguments.length && this._createWidget(e, t)
+    };
+    var a = new i;
+    a.options = e.extend(!0, {}, a.options), e[s][t].prototype = e.extend(!0, a, {
+      namespace: s,
+      widgetName: t,
+      widgetEventPrefix: e[s][t].prototype.widgetEventPrefix || t,
+      widgetBaseClass: o
+    }, n), e.widget.bridge(t, e[s][t])
+  }, e.widget.bridge = function(i, n) {
+    e.fn[i] = function(o) {
+      var s = "string" == typeof o, a = Array.prototype.slice.call(arguments, 1), r = this;
+      return o=!s && a.length ? e.extend.apply(null, [!0, o].concat(a)) : o, s && "_" === o.charAt(0) ? r : (this.each(s ? function() {
+        var n = e.data(this, i), s = n && e.isFunction(n[o]) ? n[o].apply(n, a): n;
+        return s !== n && s !== t ? (r = s, !1) : void 0
+      } : function() {
+        var t = e.data(this, i);
+        t ? t.option(o || {})._init() : e.data(this, i, new n(o, this))
+      }), r)
+    }
+  }, e.Widget = function(e, t) {
+    arguments.length && this._createWidget(e, t)
+  }, e.Widget.prototype = {
+    widgetName: "widget",
+    widgetEventPrefix: "",
+    options: {
+      disabled: !1
+    },
+    _createWidget: function(t, i) {
+      e.data(i, this.widgetName, this), this.element = e(i), this.options = e.extend(!0, {}, this.options, this._getCreateOptions(), t);
+      var n = this;
+      this.element.bind("remove." + this.widgetName, function() {
+        n.destroy()
+      }), this._create(), this._trigger("create"), this._init()
+    },
+    _getCreateOptions: function() {
+      return e.metadata && e.metadata.get(this.element[0])[this.widgetName]
+    },
+    _create: function() {},
+    _init: function() {},
+    destroy: function() {
+      this.element.unbind("." + this.widgetName).removeData(this.widgetName), this.widget().unbind("." + this.widgetName).removeAttr("aria-disabled").removeClass(this.widgetBaseClass + "-disabled ui-state-disabled")
+    },
+    widget: function() {
+      return this.element
+    },
+    option: function(i, n) {
+      var o = i;
+      if (0 === arguments.length)
+      return e.extend({}, this.options);
+      if ("string" == typeof i) {
+        if (n === t)
+        return this.options[i];
+        o = {}, o[i] = n
+      }
+      return this._setOptions(o), this
+    },
+    _setOptions: function(t) {
+      var i = this;
+      return e.each(t, function(e, t) {
+        i._setOption(e, t)
+      }), this
+    },
+    _setOption: function(e, t) {
+      return this.options[e] = t, "disabled" === e && this.widget()[t ? "addClass": "removeClass"](this.widgetBaseClass + "-disabled ui-state-disabled").attr("aria-disabled", t), this
+    },
+    enable: function() {
+      return this._setOption("disabled", !1)
+    },
+    disable: function() {
+      return this._setOption("disabled", !0)
+    },
+    _trigger: function(t, i, n) {
+      var o, s, a = this.options[t];
+      if (n = n || {}, i = e.Event(i), i.type = (t === this.widgetEventPrefix ? t : this.widgetEventPrefix + t).toLowerCase(), i.target = this.element[0], s = i.originalEvent, s)
+      for (o in s)
+      o in i || (i[o] = s[o]);
+      return this.element.trigger(i, n), !(e.isFunction(a) && a.call(this.element[0], i, n)===!1 || i.isDefaultPrevented())
+    }
+  }
+}(jQuery);
+</script>
+<script type="text/javascript" src="../build/yepnope.js"></script>
+
 </head>
 <body>
 
-  <script type="text/javascript" src="../build/yepnope.js"></script>
-
 
   <pre><code></code></pre>
+
+  <div class="content">
+
+    <select class="multiselect"></select>
+    <div class="position-test" style="background=blue"></div>
+    <input id="autocomplete">
+    <form id="#ajaxForm">
+      <input type="submit" value="Submit">
+    </form>
+
+  </div>
   <script>
   // console.log = function(a) {
   //   for (var i in arguments) {
@@ -15,32 +137,103 @@
   //     document.getElementsByTagName("code")[0].innerHTML += "\n" + arguments[i].toString();
   //   }
   // }
-  yepnope([
-    {
-      test: false,
-      nope: "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/loadOnlyOnce.js"
-    },
-    {
-      test: true,
-      yep: "http://code.jquery.com/jquery-1.11.2.min.js"
-    },
-    // {
-    //   test: true,
-    //   nope: "http://code.jquery.com/jquery-1.11.0.min.js"
-    // },
-    {
-      complete: function() {
-        for (var i in document.getElementsByTagName('script')) {
-          if (i.innerHTML) console.log(i.innerHTML);
-        }
-        console.log('hi');
-        console.log(window.load);
-        console.log($.fn.jquery);
-        done();
-      }
-    }
-  ]);
 
+  function pluginLoaded(pluginName) {
+    "use strict";
+    if ( typeof($()[pluginName]) !== "undefined" ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function ckeditorLoaded() {
+    "use strict";
+    if ( typeof(CKEDITOR) !== "undefined" ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  var cdnPath = "http://localhost/cdn2/common";
+  var sharedPrefix = "https://www.lds.org/member-news";
+
+  function initArticleForm() {
+    "use strict";
+    yepnope([
+      {
+        test: pluginLoaded('multiSelect'),
+        nope : "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/jquery.lds.multiSelect.min.js"
+      },
+      {
+        test : pluginLoaded('position'),
+        nope : cdnPath + "/scripts/ui/1.8.13/jquery.ui.position.min.js"
+      },
+      {
+        test : pluginLoaded('autocomplete'),
+        nope : cdnPath + "/scripts/ui/1.8.13/jquery.ui.autocomplete.min.js"
+      },
+      {
+        test : pluginLoaded('ajaxForm'),
+        nope : "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/jquery.form.js"
+      },
+      {
+        test : pluginLoaded('fileupload'),
+        nope : [
+          cdnPath + "/scripts/jquery/plugins/fileupload/5.6/tmpl.min.js",
+          cdnPath + "/scripts/jquery/plugins/fileupload/5.6/jquery.iframe-transport.js",
+          cdnPath + "/scripts/jquery/plugins/fileupload/5.6/jquery.fileupload.js",
+          cdnPath + "/scripts/jquery/plugins/fileupload/5.6/jquery.fileupload-ui.js"
+        ]
+      },
+      {
+        test : ckeditorLoaded(),
+        nope : "https://test.ldscdn.org/lds-edit/scripts/ckeditor/ckeditor.js"
+      },
+      {
+        complete : function() {
+          console.log('multiSelect', pluginLoaded('multiSelect'));
+          console.log('position', pluginLoaded('position'));
+          console.log('autocomplete', pluginLoaded('autocomplete'));
+          console.log('ajaxForm', pluginLoaded('ajaxForm'));
+          console.log('fileupload', pluginLoaded('fileupload'));
+          console.log('ckeditor', ckeditorLoaded());
+
+          $('select').multiSelect();
+          $('.position-test').position({
+            my: "center",
+            at: "center",
+            of: ".content"
+          });
+          $('#autocomplete').autocomplete({
+            source: ['abc', 'qwerty', 'am']
+          });
+
+
+          $('#ajaxForm').ajaxForm(function() {
+            console.log("You are the best");
+          });
+
+
+
+        }
+      }
+    ]);
+  }
+
+  setTimeout(function() {
+    initArticleForm();
+
+    setTimeout(function() {
+      console.log('multiSelect', pluginLoaded('multiSelect'));
+      console.log('position', pluginLoaded('position'));
+      console.log('autocomplete', pluginLoaded('autocomplete'));
+      console.log('ajaxForm', pluginLoaded('ajaxForm'));
+      console.log('fileupload', pluginLoaded('fileupload'));
+      console.log('ckeditor', ckeditorLoaded());
+    }, 1000);
+  }, 1000);
   </script>
 </body>
 

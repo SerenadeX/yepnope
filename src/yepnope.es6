@@ -4,29 +4,48 @@ let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
 let isObject = (obj) => Object(obj) === obj;
 
 let yepnopeScripts = [];
+var eventFired = false;
+window.onload = () => {
+  eventFired = true;
+};
 
 class Yepnope {
   constructor(needs) {
-    this.fileStack = 0;
-    this.execStack = [];
-    this.timeout = 1e4;
-    this.cache = [];
-    this.firstScript = document.getElementsByTagName('script')[0];
-    this.complete = function() {
-      console.log('ran default');
+
+    var runMe = () => {
+
+
+      this.fileStack = 0;
+      this.execStack = [];
+      this.timeout = 1e4;
+      this.cache = [];
+      this.firstScript = document.getElementsByTagName('script')[0];
+      // this.firstScript = document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
+      this.complete = function() {
+        console.log('ran default');
+      };
+
+
+      if (isString(needs)) this.loadFile(needs);
+      if (isArray(needs)) {
+        this.loadFromArray(needs);
+      } else if (isObject(needs)) {
+        this.loadFromObject(needs);
+      }
     };
+    var i = setInterval(() => {
+      if (eventFired) {
+        clearInterval(i);
+        runMe();
+      }
+    }, 50);
+    // runMe();
 
-
-    if (isString(needs)) this.loadFile(needs);
-    if (isArray(needs)) {
-      this.loadFromArray(needs);
-    } else if (isObject(needs)) {
-      this.loadFromObject(needs);
-    }
   }
   readFirstScript() {
     if (!this.firstScript || !this.firstScript.parentNode) {
-      this.firstScript = document.getElementsByTagName('script')[0];
+    this.firstScript = document.getElementsByTagName('script')[0];
+    // this.firstScript = document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
     }
   }
   isFileReady(readyState) {
@@ -42,14 +61,13 @@ class Yepnope {
     let cbRef = callback;
     let runOnGroup = (needGroup, moreToCome) => {
       if ('' !== needGroup && !needGroup && !moreToCome) {
-
         // this.complete();
       } else if (isString(needGroup)) {
         if (!moreToCome) {
           callback = () => {
             let args = [].slice.call(arguments);
             cbRef.apply(this, args);
-            // complete();
+            // this.complete();
           };
         }
         this.loadFile(needGroup, callback);
@@ -63,14 +81,14 @@ class Yepnope {
                 return () => {
                   let args = [].slice.call(arguments);
                   if (innerCb) innerCb.apply(this, args);
-                  // complete();
+                  // this.complete();
                 };
               };
             } else {
               callback = () => {
                 var args = [].slice.call(arguments);
                 cbRef.apply(this, args);
-                // complete();
+                // this.complete();
               };
             }
           }
@@ -92,8 +110,11 @@ class Yepnope {
     for (var key in arr) {
       var a = arr[key];
       if (isString(a)) this.loadFile(a);
-      if (isArray(a)) this.loadFromArray(a);
-      if (isObject(a)) this.loadFromObject(a);
+      if (isArray(a)) {
+        this.loadFromArray(a);
+      } else if (isObject(a)) {
+        this.loadFromObject(a);
+      }
     }
   }
   getExtension(url) {
@@ -145,7 +166,10 @@ class Yepnope {
         if (!this.started) this.executeStack();
 
         if (first) {
-          if (elementType === 'img') setTimeout(() => this.firstScript.parentNode.removeChild(element), 50);
+          if (elementType === 'img') setTimeout(() => {
+            this.readFirstScript();
+            this.firstScript.parentNode.removeChild(element);
+          }, 50);
 
           for (var i in this.cache[url]) {
             var item = this.cache[url][i];
