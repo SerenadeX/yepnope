@@ -44,8 +44,8 @@ class Yepnope {
   }
   readFirstScript() {
     if (!this.firstScript || !this.firstScript.parentNode) {
-    this.firstScript = document.getElementsByTagName('script')[0];
-    // this.firstScript = document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
+      this.firstScript = document.getElementsByTagName('script')[0];
+      // this.firstScript = document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
     }
   }
   isFileReady(readyState) {
@@ -57,9 +57,18 @@ class Yepnope {
     let always = obj.load || obj.both;
     let callback = obj.callback || function() {};
 
-    this.complete = obj.complete
+    this.complete = obj.complete;
+
     let cbRef = callback;
     let runOnGroup = (needGroup, moreToCome) => {
+
+
+      let shouldBail = (url) => {
+        return yepnopeScripts.indexOf(url) > -1;
+      };
+
+
+
       if ('' !== needGroup && !needGroup && !moreToCome) {
         // this.complete();
       } else if (isString(needGroup)) {
@@ -70,7 +79,12 @@ class Yepnope {
             // this.complete();
           };
         }
-        this.loadFile(needGroup, callback);
+
+        if (!shouldBail(needGroup)) {
+          this.loadFile(needGroup, callback);
+        } else if (!moreToCome && this.complete) {
+          this.complete();
+        }
       } else if (isObject(needGroup)) {
         var needGroupSize = Object.keys(needGroup).length;
 
@@ -92,7 +106,11 @@ class Yepnope {
               };
             }
           }
-          this.loadFile(needGroup[key], callback);
+          if (!shouldBail(needGroup[key])) {
+            this.loadFile(needGroup[key], callback);
+          } else if (!moreToCome && this.complete) {
+            this.load(this.complete);
+          }
         }
       }
 
@@ -102,7 +120,7 @@ class Yepnope {
     if (always) {
       runOnGroup(always);
     } else if (this.complete) {
-      runOnGroup('');
+      runOnGroup();
     }
 
   }
@@ -125,6 +143,7 @@ class Yepnope {
     this.started = false;
 
     this.fileStack++;
+
     if (isString(resource)) {
       this.preloadFile(resource, ext);
     } else {
@@ -133,6 +152,7 @@ class Yepnope {
     }
   }
   preloadFile(url, ext) {
+
     var elementType;
     var validType = false;
     var firstFlag = false;
@@ -180,9 +200,6 @@ class Yepnope {
       }
     };
 
-    if (yepnopeScripts.indexOf(url) > -1) {
-      return;
-    }
 
     element.src = url;
     element.setAttribute('type', 'text/javascript');
@@ -199,6 +216,7 @@ class Yepnope {
       if (firstFlag || this.cache[url] === 2) {
         this.readFirstScript();
         this.firstScript.parentNode.insertBefore(element, this.firstScript);
+
         setTimeout(() => {
           onload();
         }, this.timeout);
@@ -212,7 +230,6 @@ class Yepnope {
     var item = this.execStack.shift();
     this.started = true;
 
-
     if (item) {
       if (item.ext) { //not a function
         setTimeout(() => {
@@ -223,7 +240,6 @@ class Yepnope {
         this.executeStack();
       }
     } else {
-
       this.started = false;
       if (!this.execStack.length && isFunction(this.complete)) {
         this.complete();
@@ -232,14 +248,18 @@ class Yepnope {
 
   }
   loadFile(filename, callback) {
+
+
+    yepnopeScripts.push(filename);
+
     let extension = this.getExtension(filename);
 
     if (callback && !isFunction(callback)) {
       callback = callback[filename] || filename.split("/").pop().split('?')[0];
     }
 
-
     this.cache[filename] = 1;
+
 
     if (filename) {
       this.load(filename, extension);
@@ -270,15 +290,6 @@ class Yepnope {
       element.src = item.url;
     }
 
-    if (yepnopeScripts.indexOf(item.url) > -1) {
-      this.executeStack();
-      return;
-    }
-
-    yepnopeScripts.push(item.url);
-
-
-
     element.onload = () => {
       if (!done && this.isFileReady(element.readyState)) {
         done = true;
@@ -298,9 +309,7 @@ class Yepnope {
     }, this.timeout);
 
     this.readFirstScript();
-
     this.firstScript.parentNode.insertBefore(element, this.firstScript);
-
   }
 }
 

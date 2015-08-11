@@ -1,3 +1,4 @@
+window.load = 0;
 describe('yepnope tests', function() {
 
   var removeAllScriptsAndStyles = function() {
@@ -26,7 +27,7 @@ describe('yepnope tests', function() {
       expect(yepnope).not.toBeNull();
     });
   });
-  //
+
   describe('yep nope differences', function() {
     it('loads correct script on true', function(done) {
       yepnope({
@@ -66,10 +67,24 @@ describe('yepnope tests', function() {
         }
       });
     });
+
+    it('should only load once, but run both completes', function(done) {
+      var count = 0;
+      var finished = function() {
+        count++;
+        if (count == 2) {
+          done();
+        }
+      };
+      var obj = {
+        load: "https://dl.dropboxusercontent.com/u/41585993/Sharable%20Sites/Church/loadOnlyTwice.js",
+        complete: finished
+      };
+      yepnope([obj, obj]);
+    });
   });
 
   describe('api weirdness', function(done) {
-
     it('should load complete in object at end of array', function(done) {
       yepnope([
         {

@@ -81,8 +81,14 @@ var Yepnope = (function () {
       var callback = obj.callback || function () {};
 
       this.complete = obj.complete;
+
       var cbRef = callback;
       var runOnGroup = function runOnGroup(needGroup, moreToCome) {
+
+        var shouldBail = function shouldBail(url) {
+          return yepnopeScripts.indexOf(url) > -1;
+        };
+
         if ('' !== needGroup && !needGroup && !moreToCome) {} else if (isString(needGroup)) {
           if (!moreToCome) {
             callback = function () {
@@ -91,7 +97,12 @@ var Yepnope = (function () {
               // this.complete();
             };
           }
-          _this2.loadFile(needGroup, callback);
+
+          if (!shouldBail(needGroup)) {
+            _this2.loadFile(needGroup, callback);
+          } else if (!moreToCome && _this2.complete) {
+            _this2.complete();
+          }
         } else if (isObject(needGroup)) {
           var needGroupSize = Object.keys(needGroup).length;
 
@@ -113,7 +124,11 @@ var Yepnope = (function () {
                 };
               }
             }
-            _this2.loadFile(needGroup[key], callback);
+            if (!shouldBail(needGroup[key])) {
+              _this2.loadFile(needGroup[key], callback);
+            } else if (!moreToCome && _this2.complete) {
+              _this2.load(_this2.complete);
+            }
           }
         }
       };
@@ -122,7 +137,7 @@ var Yepnope = (function () {
       if (always) {
         runOnGroup(always);
       } else if (this.complete) {
-        runOnGroup('');
+        runOnGroup();
       }
     }
   }, {
@@ -152,6 +167,7 @@ var Yepnope = (function () {
       this.started = false;
 
       this.fileStack++;
+
       if (isString(resource)) {
         this.preloadFile(resource, ext);
       } else {
@@ -210,10 +226,6 @@ var Yepnope = (function () {
         }
       };
 
-      if (yepnopeScripts.indexOf(url) > -1) {
-        return;
-      }
-
       element.src = url;
       element.setAttribute('type', 'text/javascript');
       element.width = element.height = '0';
@@ -229,6 +241,7 @@ var Yepnope = (function () {
         if (firstFlag || this.cache[url] === 2) {
           this.readFirstScript();
           this.firstScript.parentNode.insertBefore(element, this.firstScript);
+
           setTimeout(function () {
             onload();
           }, this.timeout);
@@ -256,7 +269,6 @@ var Yepnope = (function () {
           this.executeStack();
         }
       } else {
-
         this.started = false;
         if (!this.execStack.length && isFunction(this.complete)) {
           this.complete();
@@ -267,6 +279,8 @@ var Yepnope = (function () {
     key: 'loadFile',
     value: function loadFile(filename, callback) {
       var _this5 = this;
+
+      yepnopeScripts.push(filename);
 
       var extension = this.getExtension(filename);
 
@@ -309,13 +323,6 @@ var Yepnope = (function () {
         element.src = item.url;
       }
 
-      if (yepnopeScripts.indexOf(item.url) > -1) {
-        this.executeStack();
-        return;
-      }
-
-      yepnopeScripts.push(item.url);
-
       element.onload = function () {
         if (!done && _this6.isFileReady(element.readyState)) {
           done = true;
@@ -334,7 +341,6 @@ var Yepnope = (function () {
       }, this.timeout);
 
       this.readFirstScript();
-
       this.firstScript.parentNode.insertBefore(element, this.firstScript);
     }
   }]);
