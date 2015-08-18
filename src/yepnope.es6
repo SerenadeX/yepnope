@@ -4,6 +4,8 @@ let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
 let isObject = (obj) => Object(obj) === obj;
 
 let yepnopeScripts = [];
+let loadedYepnopeScripts = [];
+
 var eventFired = false;
 window.onload = () => {
   eventFired = true;
@@ -57,7 +59,9 @@ class Yepnope {
     let always = obj.load || obj.both;
     let callback = obj.callback || function() {};
 
+
     this.complete = obj.complete;
+
 
     let cbRef = callback;
     let runOnGroup = (needGroup, moreToCome) => {
@@ -83,10 +87,18 @@ class Yepnope {
         if (!shouldBail(needGroup)) {
           this.loadFile(needGroup, callback);
         } else if (!moreToCome && this.complete) {
-          this.complete();
+          let int = setInterval(() => {
+            if (loadedYepnopeScripts.indexOf(needGroup) > -1) {
+              this.complete();
+              clearInterval(int);
+            }
+          }, 50);
         }
       } else if (isObject(needGroup)) {
         var needGroupSize = Object.keys(needGroup).length;
+
+
+
 
         for (let key in needGroup) {
           if (!moreToCome && !--needGroupSize) {
@@ -106,10 +118,19 @@ class Yepnope {
               };
             }
           }
+
+
           if (!shouldBail(needGroup[key])) {
             this.loadFile(needGroup[key], callback);
-          } else if (!moreToCome && this.complete) {
-            this.load(this.complete);
+          } else if (!moreToCome && this.complete && (key + 1 == needGroup.length)) {
+
+            let int = setInterval(() => {
+              let test = JSON.stringify(loadedYepnopeScripts, 2, 2) == JSON.stringify(yepnopeScripts, 2, 2);
+              if (test) {
+                this.complete();
+                clearInterval(int);
+              }
+            }, 50);
           }
         }
       }
@@ -183,6 +204,7 @@ class Yepnope {
     let onload = (first) => {
       if (!done && this.isFileReady(element.readyState)) {
         done = true;
+
         if (!this.started) this.executeStack();
 
         if (first) {
@@ -215,6 +237,7 @@ class Yepnope {
 
       if (firstFlag || this.cache[url] === 2) {
         this.readFirstScript();
+
         this.firstScript.parentNode.insertBefore(element, this.firstScript);
 
         setTimeout(() => {
@@ -247,6 +270,11 @@ class Yepnope {
     }
 
   }
+  debugExecStack() {
+    this.execStack.filter((value) => {
+      return true;
+    });
+  }
   loadFile(filename, callback) {
 
 
@@ -267,13 +295,13 @@ class Yepnope {
 
     if (isFunction(callback)) {
       this.load(() => {
-
         callback(filename);
         this.cache[filename] = 2;
       });
     }
   }
   injectFile(item) {
+    this.debugExecStack();
     var element;
     var done = false;
 
@@ -291,8 +319,10 @@ class Yepnope {
     }
 
     element.onload = () => {
+
       if (!done && this.isFileReady(element.readyState)) {
         done = true;
+        loadedYepnopeScripts.push(item.url);
         this.executeStack();
         element.onload = element.onload = null;
       }

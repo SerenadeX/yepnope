@@ -16,6 +16,8 @@ var isObject = function isObject(obj) {
 };
 
 var yepnopeScripts = [];
+var loadedYepnopeScripts = [];
+
 var eventFired = false;
 window.onload = function () {
   eventFired = true;
@@ -101,7 +103,14 @@ var Yepnope = (function () {
           if (!shouldBail(needGroup)) {
             _this2.loadFile(needGroup, callback);
           } else if (!moreToCome && _this2.complete) {
-            _this2.complete();
+            (function () {
+              var int = setInterval(function () {
+                if (loadedYepnopeScripts.indexOf(needGroup) > -1) {
+                  _this2.complete();
+                  clearInterval(int);
+                }
+              }, 50);
+            })();
           }
         } else if (isObject(needGroup)) {
           var needGroupSize = Object.keys(needGroup).length;
@@ -124,10 +133,20 @@ var Yepnope = (function () {
                 };
               }
             }
+
             if (!shouldBail(needGroup[key])) {
               _this2.loadFile(needGroup[key], callback);
-            } else if (!moreToCome && _this2.complete) {
-              _this2.load(_this2.complete);
+            } else if (!moreToCome && _this2.complete && key + 1 == needGroup.length) {
+              (function () {
+
+                var int = setInterval(function () {
+                  var test = JSON.stringify(loadedYepnopeScripts, 2, 2) == JSON.stringify(yepnopeScripts, 2, 2);
+                  if (test) {
+                    _this2.complete();
+                    clearInterval(int);
+                  }
+                }, 50);
+              })();
             }
           }
         }
@@ -209,6 +228,7 @@ var Yepnope = (function () {
       var onload = function onload(first) {
         if (!done && _this3.isFileReady(element.readyState)) {
           done = true;
+
           if (!_this3.started) _this3.executeStack();
 
           if (first) {
@@ -240,6 +260,7 @@ var Yepnope = (function () {
 
         if (firstFlag || this.cache[url] === 2) {
           this.readFirstScript();
+
           this.firstScript.parentNode.insertBefore(element, this.firstScript);
 
           setTimeout(function () {
@@ -276,6 +297,13 @@ var Yepnope = (function () {
       }
     }
   }, {
+    key: 'debugExecStack',
+    value: function debugExecStack() {
+      this.execStack.filter(function (value) {
+        return true;
+      });
+    }
+  }, {
     key: 'loadFile',
     value: function loadFile(filename, callback) {
       var _this5 = this;
@@ -296,7 +324,6 @@ var Yepnope = (function () {
 
       if (isFunction(callback)) {
         this.load(function () {
-
           callback(filename);
           _this5.cache[filename] = 2;
         });
@@ -307,6 +334,7 @@ var Yepnope = (function () {
     value: function injectFile(item) {
       var _this6 = this;
 
+      this.debugExecStack();
       var element;
       var done = false;
 
@@ -324,8 +352,10 @@ var Yepnope = (function () {
       }
 
       element.onload = function () {
+
         if (!done && _this6.isFileReady(element.readyState)) {
           done = true;
+          loadedYepnopeScripts.push(item.url);
           _this6.executeStack();
           element.onload = element.onload = null;
         }
