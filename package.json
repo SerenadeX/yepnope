@@ -7,7 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/karma start --browsers PhantomJS",
+    "start": "./node_modules/.bin/karma start",
+    "start-ie": "./node_modules/.bin/karma start --browsers IE; npm start",
+    "start-safari": "./node_modules/.bin/karma start --browsers Safari; npm start"
   },
   "repository": {
     "type": "git",
@@ -24,8 +27,13 @@
     "gulp-babel": "^5.1.0",
     "gulp-rename": "^1.2.2",
     "jasmine-core": "^2.2.0",
-    "karma": "^0.12.31",
+    "karma": "^0.12.37",
     "karma-chrome-launcher": "^0.1.7",
-    "karma-jasmine": "^0.3.5"
+    "karma-firefox-launcher": "^0.1.6",
+    "karma-ie-launcher": "^0.2.0",
+    "karma-jasmine": "^0.3.5",
+    "karma-phantomjs-launcher": "^0.2.0",
+    "karma-safari-launcher": "^0.1.1",
+    "phantomjs": "^1.9.17"
   }
 }

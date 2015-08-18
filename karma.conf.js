@@ -4,6 +4,15 @@
 module.exports = function(config) {
   config.set({
 
+    plugins: [
+      'karma-chrome-launcher',
+      'karma-phantomjs-launcher',
+      'karma-firefox-launcher',
+      'karma-safari-launcher',
+      'karma-ie-launcher',
+      'karma-jasmine'
+    ],
+
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -16,16 +25,12 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'build/yepnope.js',
-      'test/**/*.js'
+      'test/test.js'
     ],
 
 
     // list of files to exclude
     exclude: [
-      'test/tests.js',
-      'test/qunit.js',
-      'test/run.js',
-      'test/node_modules/**/*.js'
     ],
 
 
@@ -51,7 +56,7 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_DEBUG,
+    logLevel: config.LOG_INFO,
 
 
     // enable / disable watching file and executing tests whenever any file changes
@@ -60,11 +65,11 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true
   });
 };

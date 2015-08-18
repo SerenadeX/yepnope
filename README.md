@@ -32,3 +32,13 @@ Load files based on the options below.  `opts` is an object with the following v
 `callback`: A function that gets called after each file is loaded.
 
 `complete`: A function that gets called when all files have been loaded.
+
+
+## Testing
+
+To test, the following tests it in different ways
+
+- `npm test` – tests yepnope through PhantomJS alone.  Used for Travis CI
+- `npm start` – tests yepnope in all browsers but IE and Safari.  Used on systems that have neither.
+- `npm run-script start-ie` – tests yepnope in all browsers (except Safari) starting in IE.  Used in Windows.
+- `npm run-script start-safari` – tests yepnope in all browsers (except IE) starting in Safari.  Used on Macs.

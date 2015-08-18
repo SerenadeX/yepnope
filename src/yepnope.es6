@@ -4,24 +4,50 @@ let isArray = Array.isArray || ((arr) =>  {}.toString() == '[object Array]');
 let isObject = (obj) => Object(obj) === obj;
 
 let yepnopeScripts = [];
+let loadedYepnopeScripts = [];
+
+var eventFired = false;
+window.onload = () => {
+  eventFired = true;
+};
 
 class Yepnope {
   constructor(needs) {
-    this.fileStack = 0;
-    this.execStack = [];
-    this.timeout = 1e4;
-    this.cache = [];
-    this.firstScript = document.getElementsByTagName('script')[0];
-    this.complete = function() {};
+
+    var runMe = () => {
 
 
-    if (isString(needs)) this.loadFile(needs);
-    if (isArray(needs)) this.loadFromArray(needs);
-    if (isObject(needs)) this.loadFromObject(needs);
+      this.fileStack = 0;
+      this.execStack = [];
+      this.timeout = 1e4;
+      this.cache = [];
+      this.firstScript = document.getElementsByTagName('script')[0];
+      // this.firstScript = document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
+      this.complete = function() {
+        console.log('ran default');
+      };
+
+
+      if (isString(needs)) this.loadFile(needs);
+      if (isArray(needs)) {
+        this.loadFromArray(needs);
+      } else if (isObject(needs)) {
+        this.loadFromObject(needs);
+      }
+    };
+    var i = setInterval(() => {
+      if (eventFired) {
+        clearInterval(i);
+        runMe();
+      }
+    }, 50);
+    // runMe();
+
   }
   readFirstScript() {
     if (!this.firstScript || !this.firstScript.parentNode) {
       this.firstScript = document.getElementsByTagName('script')[0];
+      // this.firstScript = document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
     }
   }
   isFileReady(readyState) {
@@ -33,25 +59,46 @@ class Yepnope {
     let always = obj.load || obj.both;
     let callback = obj.callback || function() {};
 
-    this.complete = obj.complete
-    let cbRef = callback;
 
+    this.complete = obj.complete;
+
+
+    let cbRef = callback;
     let runOnGroup = (needGroup, moreToCome) => {
 
-      if ('' !== needGroup && !needGroup && !moreToCome) {
 
-        // complete();
+      let shouldBail = (url) => {
+        return yepnopeScripts.indexOf(url) > -1;
+      };
+
+
+
+      if ('' !== needGroup && !needGroup && !moreToCome) {
+        // this.complete();
       } else if (isString(needGroup)) {
         if (!moreToCome) {
           callback = () => {
             let args = [].slice.call(arguments);
             cbRef.apply(this, args);
-            // complete();
+            // this.complete();
           };
         }
-        this.loadFile(needGroup, callback);
+
+        if (!shouldBail(needGroup)) {
+          this.loadFile(needGroup, callback);
+        } else if (!moreToCome && this.complete) {
+          let int = setInterval(() => {
+            if (loadedYepnopeScripts.indexOf(needGroup) > -1) {
+              this.complete();
+              clearInterval(int);
+            }
+          }, 50);
+        }
       } else if (isObject(needGroup)) {
         var needGroupSize = Object.keys(needGroup).length;
+
+
+
 
         for (let key in needGroup) {
           if (!moreToCome && !--needGroupSize) {
@@ -60,18 +107,31 @@ class Yepnope {
                 return () => {
                   let args = [].slice.call(arguments);
                   if (innerCb) innerCb.apply(this, args);
-                  // complete();
+                  // this.complete();
                 };
               };
             } else {
               callback = () => {
                 var args = [].slice.call(arguments);
                 cbRef.apply(this, args);
-                // complete();
+                // this.complete();
               };
             }
           }
-          this.loadFile(needGroup[key], callback);
+
+
+          if (!shouldBail(needGroup[key])) {
+            this.loadFile(needGroup[key], callback);
+          } else if (!moreToCome && this.complete && (key + 1 == needGroup.length)) {
+
+            let int = setInterval(() => {
+              let test = JSON.stringify(loadedYepnopeScripts, 2, 2) == JSON.stringify(yepnopeScripts, 2, 2);
+              if (test) {
+                this.complete();
+                clearInterval(int);
+              }
+            }, 50);
+          }
         }
       }
 
@@ -80,7 +140,7 @@ class Yepnope {
     runOnGroup(group, always || this.complete);
     if (always) {
       runOnGroup(always);
-    } else if (complete) {
+    } else if (this.complete) {
       runOnGroup();
     }
 
@@ -89,8 +149,11 @@ class Yepnope {
     for (var key in arr) {
       var a = arr[key];
       if (isString(a)) this.loadFile(a);
-      if (isArray(a)) this.loadFromArray(a);
-      if (isObject(a)) this.loadFromObject(a);
+      if (isArray(a)) {
+        this.loadFromArray(a);
+      } else if (isObject(a)) {
+        this.loadFromObject(a);
+      }
     }
   }
   getExtension(url) {
@@ -101,6 +164,7 @@ class Yepnope {
     this.started = false;
 
     this.fileStack++;
+
     if (isString(resource)) {
       this.preloadFile(resource, ext);
     } else {
@@ -109,6 +173,7 @@ class Yepnope {
     }
   }
   preloadFile(url, ext) {
+
     var elementType;
     var validType = false;
     var firstFlag = false;
@@ -139,10 +204,14 @@ class Yepnope {
     let onload = (first) => {
       if (!done && this.isFileReady(element.readyState)) {
         done = true;
+
         if (!this.started) this.executeStack();
 
         if (first) {
-          if (elementType === 'img') setTimeout(() => this.firstScript.parentNode.removeChild(element), 50);
+          if (elementType === 'img') setTimeout(() => {
+            this.readFirstScript();
+            this.firstScript.parentNode.removeChild(element);
+          }, 50);
 
           for (var i in this.cache[url]) {
             var item = this.cache[url][i];
@@ -153,9 +222,6 @@ class Yepnope {
       }
     };
 
-    if (yepnopeScripts.indexOf(url) > -1) {
-      return;
-    }
 
     element.src = url;
     element.setAttribute('type', 'text/javascript');
@@ -171,7 +237,9 @@ class Yepnope {
 
       if (firstFlag || this.cache[url] === 2) {
         this.readFirstScript();
+
         this.firstScript.parentNode.insertBefore(element, this.firstScript);
+
         setTimeout(() => {
           onload();
         }, this.timeout);
@@ -185,7 +253,6 @@ class Yepnope {
     var item = this.execStack.shift();
     this.started = true;
 
-
     if (item) {
       if (item.ext) { //not a function
         setTimeout(() => {
@@ -196,7 +263,6 @@ class Yepnope {
         this.executeStack();
       }
     } else {
-    
       this.started = false;
       if (!this.execStack.length && isFunction(this.complete)) {
         this.complete();
@@ -204,15 +270,24 @@ class Yepnope {
     }
 
   }
+  debugExecStack() {
+    this.execStack.filter((value) => {
+      return true;
+    });
+  }
   loadFile(filename, callback) {
+
+
+    yepnopeScripts.push(filename);
+
     let extension = this.getExtension(filename);
 
     if (callback && !isFunction(callback)) {
       callback = callback[filename] || filename.split("/").pop().split('?')[0];
     }
 
-
     this.cache[filename] = 1;
+
 
     if (filename) {
       this.load(filename, extension);
@@ -220,13 +295,13 @@ class Yepnope {
 
     if (isFunction(callback)) {
       this.load(() => {
-
         callback(filename);
         this.cache[filename] = 2;
       });
     }
   }
   injectFile(item) {
+    this.debugExecStack();
     var element;
     var done = false;
 
@@ -243,18 +318,11 @@ class Yepnope {
       element.src = item.url;
     }
 
-    if (yepnopeScripts.indexOf(item.url) > -1) {
-      this.executeStack();
-      return;
-    }
-
-    yepnopeScripts.push(item.url);
-
-
-
     element.onload = () => {
+
       if (!done && this.isFileReady(element.readyState)) {
         done = true;
+        loadedYepnopeScripts.push(item.url);
         this.executeStack();
         element.onload = element.onload = null;
       }
@@ -271,9 +339,7 @@ class Yepnope {
     }, this.timeout);
 
     this.readFirstScript();
-
     this.firstScript.parentNode.insertBefore(element, this.firstScript);
-
   }
 }
 
